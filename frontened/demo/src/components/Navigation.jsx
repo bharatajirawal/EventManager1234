@@ -1,34 +1,40 @@
-import { Link } from 'react-router-dom'
-import { Menu } from 'lucide-react'
-import Button from './ui/Button'
+import { Link } from "react-router-dom"
 
 export default function Navigation() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
-      <nav className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="text-2xl font-bold text-orange-500">
-          EventHub
+    <header className="bg-blue-600 text-white">
+      <nav className="container mx-auto flex items-center justify-between p-4">
+        <Link to="/" className="text-2xl font-bold">
+          EventHUB
         </Link>
-        
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link to="/services" className="text-sm font-medium">
-            Services
-          </Link>
-          <Link to="/login">
-            <Button variant="ghost">Log in</Button>
-          </Link>
-          <Link to="/signup">
-            <Button>Sign up</Button>
-          </Link>
-        </div>
-
-        {/* Mobile Navigation */}
-        <button className="md:hidden">
-          <Menu className="h-6 w-6" />
-        </button>
+        <ul className="flex space-x-4">
+          <li>
+            <Link to="/" className="hover:underline">
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link to="/create-event" className="hover:underline">
+              Create Event
+            </Link>
+          </li>
+          <li>
+            <Link to="/services" className="hover:underline">
+              Services
+            </Link>
+          </li>
+          <li>
+            <Link to="/login" className="hover:underline">
+              Login
+            </Link>
+          </li>
+          <li>
+            <Link to="/signup" className="hover:underline">
+              Signup
+            </Link>
+          </li>
+        </ul>
       </nav>
     </header>
   )
 }
-

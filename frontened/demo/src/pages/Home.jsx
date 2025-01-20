@@ -1,8 +1,32 @@
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import EventCard from "../components/EventCard";
 import { Search, MapPin } from 'lucide-react';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
+ import Input from '../components/ui/Input';
 
 export default function Home() {
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch("http://localhost:8080");
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data);
+      } else {
+        toast.error("Failed to fetch events");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An error occurred while fetching events");
+    }
+  };
+
   const categories = [
     { icon: '🎵', label: 'Music' },
     { icon: '🌙', label: 'Nightlife' },
@@ -22,9 +46,7 @@ export default function Home() {
           <h1 className="text-5xl md:text-6xl font-bold mb-4">
             Find your next unforgettable experience
           </h1>
-          <p className="text-2xl mb-8">
-            Discover events that match your passions
-          </p>
+          <p className="text-2xl mb-8">Discover events that match your passions</p>
           <Button variant="ghost" className="bg-white text-orange-500 hover:bg-gray-100">
             Explore Events
           </Button>
@@ -64,6 +86,16 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Events Section */}
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-8">Upcoming Events</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
