@@ -1,5 +1,6 @@
-import { useState } from "react"
-import toast from "react-hot-toast"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function CreateEventForm() {
   const [formData, setFormData] = useState({
@@ -12,28 +13,35 @@ export default function CreateEventForm() {
     type: "",
     isFree: true,
     price: "",
-  })
+  });
+
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: type === "checkbox" ? checked : value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8080/users", {
+      const response = await fetch("http://localhost:8080/users/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
+      
       if (response.ok) {
-        toast.success("Event created successfully!")
+        const createdEvent = await response.json(); // Get the created event details, including its ID
+        toast.success("Event created successfully!");
+        console.log(createdEvent);
+        console.log(createdEvent._id);
+        navigate(`/events/${createdEvent._id}`); // Navigate to the event details page
         setFormData({
           title: "",
           description: "",
@@ -44,16 +52,16 @@ export default function CreateEventForm() {
           type: "",
           isFree: true,
           price: "",
-        })
+        });
       } else {
-        const errorData = await response.json()
-        toast.error(errorData.message || "Failed to create event")
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to create event");
       }
     } catch (error) {
-      console.error("Error:", error)
-      toast.error("An error occurred while creating the event")
+
+      toast.error("An error occurred while creating the event");
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,7 +173,13 @@ export default function CreateEventForm() {
       </div>
       <div>
         <label className="flex items-center">
-          <input type="checkbox" name="isFree" checked={formData.isFree} onChange={handleChange} className="mr-2" />
+          <input
+            type="checkbox"
+            name="isFree"
+            checked={formData.isFree}
+            onChange={handleChange}
+            className="mr-2"
+          />
           Free Event
         </label>
       </div>
@@ -186,10 +200,12 @@ export default function CreateEventForm() {
           />
         </div>
       )}
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      <button
+        type="submit"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
         Create Event
       </button>
     </form>
-  )
+  );
 }
-

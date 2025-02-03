@@ -14,7 +14,7 @@ export default function Home() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("http://localhost:8080");
+      const response = await fetch("http://localhost:8080/users/events");
       if (response.ok) {
         const data = await response.json();
         setEvents(data);

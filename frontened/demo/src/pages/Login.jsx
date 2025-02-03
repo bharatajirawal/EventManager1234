@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
+  const { login, setIsLoggedIn} = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -56,6 +58,8 @@ export default function Login() {
 
       const data = await response.json();
       localStorage.setItem('authToken', data.jwtToken);
+      login(data.accessToken)
+      setIsLoggedIn(true)
       setSuccess('Login successful!');
       setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
