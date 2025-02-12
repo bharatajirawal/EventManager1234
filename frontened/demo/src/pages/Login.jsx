@@ -1,67 +1,44 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
 export default function Login() {
-  const { login, setIsLoggedIn} = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Client-side validation
-  const validateForm = () => {
-    const { email, password } = formData;
-    if (!email) return 'Email is required.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email format.';
-    if (password.length < 6) return 'Password must be at least 6 characters.';
-    return '';
-  };
-
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    setError("");
 
     try {
-      const response = await fetch('http://localhost:8080/auth/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.message || "Login failed");
       }
 
-      const data = await response.json();
-      localStorage.setItem('authToken', data.jwtToken);
-      login(data.accessToken)
-      setIsLoggedIn(true)
-      setSuccess('Login successful!');
-      setTimeout(() => navigate('/dashboard'), 1000);
+      const { token } = await response.json();
+      login(token);
+      navigate("/");
     } catch (err) {
       setError(err.message);
     }
@@ -85,7 +62,6 @@ export default function Login() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 placeholder="Email address"
               />
             </div>
@@ -99,14 +75,12 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
                 placeholder="Password"
               />
             </div>
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          {success && <p className="text-green-500 text-sm">{success}</p>}
 
           <div>
             <Button
@@ -119,7 +93,7 @@ export default function Login() {
         </form>
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link to="/signup" className="font-medium text-orange-600 hover:text-orange-500">
               Sign up
             </Link>
