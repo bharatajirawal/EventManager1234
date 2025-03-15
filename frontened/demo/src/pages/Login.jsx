@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -10,6 +10,7 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -21,6 +22,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
@@ -31,16 +33,33 @@ export default function Login() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+        throw new Error(data.message || "Login failed");
       }
 
-      const { token } = await response.json();
-      login(token);
-      navigate("/");
+      // Debug the response
+      console.log("Login response:", data);
+      
+      // Check if the jwtToken exists in the response (matches your backend response)
+      if (!data.jwtToken) {
+        throw new Error("No token received from server");
+      }
+
+      // Attempt to login with the jwtToken from the response
+      const loginSuccess = login(data.jwtToken);
+      
+      if (loginSuccess) {
+        navigate("/");
+      } else {
+        throw new Error("Invalid token received from server");
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,8 +105,9 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full py-2 px-4 bg-orange-600 text-white font-medium rounded-md shadow hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </div>
         </form>

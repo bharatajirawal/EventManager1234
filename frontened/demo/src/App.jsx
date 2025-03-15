@@ -9,7 +9,8 @@ import Services from "./pages/Services";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
-import ProtectedRoute from "./pages/ProtectedRoute";
+ import ProtectedRoute from "./pages/ProtectedRoute";
+
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {

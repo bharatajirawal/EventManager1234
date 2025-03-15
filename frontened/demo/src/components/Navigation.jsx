@@ -4,7 +4,10 @@ import { AuthContext } from "../context/AuthContext";
 
 export default function Navigation() {
   const { user, isLoggedIn } = useContext(AuthContext);
-
+  
+  // Debug what's in the user object
+  console.log("Navigation user:", user);
+  
   return (
     <header className="bg-blue-600 text-white">
       <nav className="container mx-auto flex items-center justify-between p-4">
@@ -30,7 +33,7 @@ export default function Navigation() {
           {isLoggedIn ? (
             <li>
               <Link to="/profile" className="hover:underline">
-                {user?.name}
+                {user?.email || "Profile"}
               </Link>
             </li>
           ) : (
@@ -40,11 +43,11 @@ export default function Navigation() {
                   Login
                 </Link>
               </li>
-              {/* <li>
+              <li>
                 <Link to="/signup" className="hover:underline">
                   Signup
                 </Link>
-              </li> */}
+              </li>
             </>
           )}
         </ul>

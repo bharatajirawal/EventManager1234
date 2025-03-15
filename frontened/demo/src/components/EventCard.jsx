@@ -1,17 +1,17 @@
-import { useParams, Link, useHistory } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 const EventCard = ({ event }) => {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) {
-      history.push("/login");
+      navigate("/login");
     }
-  }, [user, history]);
+  }, [user, navigate]);
 
   return (
     <div className="border rounded-lg p-4 shadow-md">
