@@ -4,6 +4,8 @@ const Event = require('../Models/Events');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+const UserModel = require('../Models/User');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -32,15 +34,13 @@ const upload = multer({
   }
 });
 
-// Get events with organizer filter
-router.get('/users/events', async (req, res) => {
+// Get events filtered by organizer email
+router.get('/events/:accessToken', async (req, res) => {
   try {
-    const filter = {};
-    if (req.query.organizer) {
-      filter.organizer = req.query.organizer;
-    }
-    
-    const events = await Event.find(filter);
+    const {accessToken}=req.query
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const events = await Event.find({ email: decoded._id });
+    console.log(decoded)
     res.json(events);
   } catch (error) {
     console.error(error);
@@ -71,19 +71,23 @@ router.get('/events/:id', async (req, res) => {
   }
 });
 
-// Create event (with organizer field)
+// Create event with organizer email
 router.post('/events', upload.single('eventImage'), async (req, res) => {
   try {
     if (!req.body.organizer) {
       return res.status(400).json({ message: 'Organizer email is required' });
     }
-
+    const {accessToken}=req.body
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    console.log("decoded", decoded)
+     
     const eventData = {
       ...req.body,
-      organizer: req.body.organizer,
+      organizer: req.body.organizer, // This should be the email
       eventImage: req.file ? `/uploads/events/${req.file.filename}` : null,
       price: req.body.isFree === 'true' ? null : parseFloat(req.body.price),
-      isFree: req.body.isFree === 'true'
+      isFree: req.body.isFree === 'true',
+      email:decoded._id
     };
 
     const event = new Event(eventData);

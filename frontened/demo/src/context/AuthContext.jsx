@@ -8,76 +8,98 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || null);
-  const [user, setUser] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [accessToken, setAccessToken] = useState(
+    localStorage.getItem("accessToken") || null
+  );
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || null
+  );
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("accessToken"));
 
-  // Function to validate JWT format
   const isValidJWT = (token) => {
     if (!token) return false;
-    // JWT should have 3 parts separated by dots
-    const parts = token.split('.');
-    return parts.length === 3;
+    try {
+      const decoded = jwtDecode(token);
+      // Check if token is expired
+      if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
   };
 
-  // Function to safely decode token
   const safelyDecodeToken = (token) => {
     try {
-      return isValidJWT(token) ? jwtDecode(token) : null;
+      if (!isValidJWT(token)) return null;
+      const decoded = jwtDecode(token);
+      return {
+        id: decoded.sub || decoded.id, // Standard JWT uses 'sub' for user ID
+        name: decoded.name,
+        email: decoded.email,
+        // Add any other claims you expect
+      };
     } catch (error) {
       console.error("Error decoding token:", error);
       return null;
     }
   };
 
-  // Set initial user and login state on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("accessToken");
-    if (storedToken) {
+    if (storedToken && isValidJWT(storedToken)) {
       const decodedUser = safelyDecodeToken(storedToken);
       if (decodedUser) {
         setAccessToken(storedToken);
         setUser(decodedUser);
         setIsLoggedIn(true);
+        // Update localStorage in case structure changed
+        localStorage.setItem("user", JSON.stringify(decodedUser));
       } else {
-        // Invalid token, clean up
-        localStorage.removeItem("accessToken");
-        setAccessToken(null);
-        setUser(null);
-        setIsLoggedIn(false);
+        cleanupAuth();
       }
+    } else {
+      cleanupAuth();
     }
   }, []);
 
-  const login = (token) => {
-    if (!token) {
-      console.error("No token provided");
+  const cleanupAuth = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    setAccessToken(null);
+    setUser(null);
+    setIsLoggedIn(false);
+  };
+
+  const login = (token, userData = null) => {
+    if (!token || !isValidJWT(token)) {
+      console.error("Invalid token");
       return false;
     }
-    
-    if (!isValidJWT(token)) {
-      console.error("Invalid token format");
-      return false;
-    }
-    
+
     try {
-      const decodedUser = jwtDecode(token);
-      setAccessToken(token);
+      const decodedUser = userData || safelyDecodeToken(token);
+      if (!decodedUser || !decodedUser.email) {
+        throw new Error("Invalid user data in token");
+      }
+
       localStorage.setItem("accessToken", token);
+      localStorage.setItem("user", JSON.stringify(decodedUser));
+      
+      setAccessToken(token);
       setUser(decodedUser);
       setIsLoggedIn(true);
       return true;
     } catch (error) {
       console.error("Login failed:", error);
+      cleanupAuth();
       return false;
     }
   };
 
   const logout = () => {
-    setAccessToken(null);
-    localStorage.removeItem("accessToken");
-    setUser(null);
-    setIsLoggedIn(false);
+    cleanupAuth();
   };
 
   const value = {
@@ -85,7 +107,7 @@ export function AuthProvider({ children }) {
     user,
     isLoggedIn,
     login,
-    logout
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
