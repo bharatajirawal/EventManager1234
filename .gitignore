@@ -1,3 +1,7 @@
+<<<<<<< HEAD
 backend/node_modules
 frontened/demo/node_modules
 backend/.env
+=======
+node_modules
+>>>>>>> parent of 3f86124 (Update .gitignore)
