@@ -246,13 +246,13 @@ export default function CreateEventForm() {
           >
             <option value="">Select event type</option>
             <option value="Music">Music</option>
-            <option value="Arts">Arts</option>
+            <option value="Nightlife">Nightlife</option>
             <option value="Business">Business</option>
-            <option value="Sports">Sports</option>
-            <option value="Food">Food</option>
-            <option value="Technology">Technology</option>
-            <option value="Education">Education</option>
-            <option value="Lifestyle">Lifestyle</option>
+            <option value="Performing Arts">Performing Arts</option>
+            <option value="Food & Drink">Food & Drink</option>
+            <option value="Holidays">Holidays</option>
+            <option value="Dating">Dating</option>
+            <option value="Hobbies">Hobbies</option>
           </select>
         </div>
       </div>
