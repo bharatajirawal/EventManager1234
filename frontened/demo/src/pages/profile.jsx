@@ -6,13 +6,14 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import MyEvents from "./MyEvents";
 export default function Profile() {
-  const { user, logout,accessToken } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("profile");
   const navigate = useNavigate();
-  console.log(user);
 
   useEffect(() => {
+    // Just set loading to false after component mounts
+    // Since we're moving events to a separate component
     setLoading(false);
   }, []);
 

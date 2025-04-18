@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./pages/ProtectedRoute";
-import EventEditPage from "./pages/EventEditPage";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -29,8 +28,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/events/edit/:id" element={<EventEditPage />} />
-
           </Routes>
         </main>
         <Footer />

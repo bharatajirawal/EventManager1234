@@ -14,7 +14,6 @@ const EventSchema = new mongoose.Schema({
   price: { type: Number },
   eventImage: { type: String },
   email:{type:mongoose.Schema.Types.ObjectId,ref:"users" ,required:true},
-  
 });
 
 module.exports = mongoose.model("Event", EventSchema);

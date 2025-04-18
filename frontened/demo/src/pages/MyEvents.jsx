@@ -19,7 +19,9 @@ const {accessToken}=useAuth()
     try {
       setLoading(true);
       // Use the organizer parameter to match the backend
-      const response=await fetch(`http://localhost:8080/users/events/filtered?accessToken=${accessToken}`);
+      const response = await fetch(
+        `http://localhost:8080/users/events?accessToken=${accessToken}`
+      );
     
       
       if (response.ok) {
@@ -41,7 +43,7 @@ const {accessToken}=useAuth()
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         const response = await fetch(
-          `http://localhost:8080/users/events/${eventId}`,
+          `http://localhost:8080/events/${eventId}`,
           {
             method: "DELETE",
             headers: {
@@ -110,7 +112,7 @@ const {accessToken}=useAuth()
                   className="w-full h-40 object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwz/NDdoaXd2M2N0LmNs/b3VkZnJvbnQubmV0/L2FwcC91cGxvYWRz/LzIwMjUvMDMvNTMx/Mzk5Njk0MjRfNTg4/YzAyZmJkY19vLXNj/YWxlZC5qcGc";
+                    e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
                   }}
                 />
               ) : (
@@ -145,21 +147,21 @@ const {accessToken}=useAuth()
                 </div>
                 
                 <div className="border-t mt-4 pt-4 flex justify-between">
-                <button
-  onClick={() => navigate(`/events/${event._id}`)}  // View event page
-  className="flex items-center text-gray-600 hover:text-blue-500"
->
-  <Eye size={16} className="mr-1" />
-  <span>View</span>
-</button>
-
-<button
-  onClick={() => navigate(`/events/edit/${event._id}`)}  // Edit event page
-  className="flex items-center text-gray-600 hover:text-green-500"
->
-  <Edit size={16} className="mr-1" />
-  <span>Edit</span>
-</button>
+                  <button
+                    onClick={() => navigate(`/events/${event._id}`)}
+                    className="flex items-center text-gray-600 hover:text-blue-500"
+                  >
+                    <Eye size={16} className="mr-1" />
+                    <span>View</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate(`/edit-event/${event._id}`)}
+                    className="flex items-center text-gray-600 hover:text-green-500"
+                  >
+                    <Edit size={16} className="mr-1" />
+                    <span>Edit</span>
+                  </button>
                   
                   <button
                     onClick={() => handleDeleteEvent(event._id)}
