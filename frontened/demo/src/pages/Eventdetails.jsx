@@ -13,6 +13,14 @@ export default function EventViewPage() {
   const [isOrganizer, setIsOrganizer] = useState(false);
 
   useEffect(() => {
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Fetches event details from the server for the given event ID.
+ * Utilizes the access token for authorization. On a successful
+ * response, updates the event state and determines if the user 
+ * is the organizer. Displays error notifications and redirects 
+
+/*******  e94a53c9-3ccb-44dd-8795-d888cbe9f18e  *******/
     const fetchEvent = async () => {
       try {
         setLoading(true);
@@ -22,6 +30,7 @@ export default function EventViewPage() {
         
         if (response.ok) {
           const data = await response.json();
+          console.log("Event details:", data);
           setEvent(data);
           setIsOrganizer(data.isOrganizer || false);
         } else {
@@ -77,15 +86,18 @@ export default function EventViewPage() {
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="relative">
-          <img
-            src={
-              event.eventImage
-                ? `http://localhost:8080${event.eventImage}`
-                : "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwz/NDdoaXd2M2N0LmNs/b3VkZnJvbnQubmV0/L2FwcC91cGxvYWRz/LzIwMjUvMDMvNTMx/Mzk5Njk0MjRfNTg4/YzAyZmJkY19vLXNj/YWxlZC5qcGc"
-            }
-            alt={event.title}
-            className="w-full h-96 object-cover"
-          />
+        <img
+  src={
+    event.eventImage
+
+      ? event.eventImage.startsWith('http') 
+        ? event.eventImage  // Already a full URL (Cloudinary)
+        : `http://localhost:8080${event.eventImage}`  // Local path
+      : "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwz/NDdoaXd2M2N0LmNs/b3VkZnJvbnQubmV0/L2FwcC91cGxvYWRz/LzIwMjUvMDMvNTMx/Mzk5Njk0MjRfNTg4/YzAyZmJkY19vLXNj/YWxlZC5qcGc"  // Fallback
+  }
+  alt={event.title}
+  className="w-full h-96 object-cover"
+/>
           {isOrganizer && (
             <button
               onClick={() => navigate(`/events/edit/${id}`)}
