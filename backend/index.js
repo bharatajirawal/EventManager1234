@@ -24,7 +24,15 @@ const PORT = process.env.PORT || 8080;
 // Middleware setup
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+// Express.js CORS configuration
+
+// Set up CORS middleware with specific origin
+app.use(cors({
+  origin: 'http://localhost:5173',  // Your frontend URL
+  credentials: true,                // Allow credentials
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Simple health check route
 app.get('/ping', (req, res) => {
