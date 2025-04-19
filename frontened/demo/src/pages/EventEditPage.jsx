@@ -32,7 +32,7 @@ export default function EventEditPage() {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:8080/users/events/${id}?accessToken=${accessToken}`
+          `https://eventmanager1234-1.onrender.com/users/events/${id}?accessToken=${accessToken}`
         );
         
         if (response.ok) {
@@ -51,7 +51,7 @@ export default function EventEditPage() {
             eventImage: data.eventImage,
           });
           if (data.eventImage) {
-            setImagePreview(`http://localhost:8080${data.eventImage}`);
+            setImagePreview(`https://eventmanager1234-1.onrender.com/${data.eventImage}`);
           }
         } else {
           toast.error("Failed to fetch event");
@@ -116,7 +116,7 @@ export default function EventEditPage() {
         formDataToSend.append("eventImage", formData.eventImage);
       }
 
-      const response = await fetch(`http://localhost:8080/users/events/${id}`, {
+      const response = await fetch(`https://eventmanager1234-1.onrender.com/users/events/${id}`, {
         method: "PATCH",
         body: formDataToSend,
       });

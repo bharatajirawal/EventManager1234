@@ -17,7 +17,7 @@ export default function MyEventsPage() {
     const fetchUserEvents = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:8080/users/events/filtered?accessToken=${accessToken}`, {
+        const response = await fetch(`https://eventmanager1234-1.onrender.com/users/events/filtered?accessToken=${accessToken}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
           }
@@ -47,7 +47,7 @@ export default function MyEventsPage() {
     
     try {
       setDeletingId(eventId)
-      const response = await fetch(`http://localhost:8080/users/events/${eventId}`, {
+      const response = await fetch(`https://eventmanager1234-1.onrender.com/users/events/${eventId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default function MyEventsPage() {
     if (eventImage.startsWith("http")) {
       return eventImage
     }
-    return `http://localhost:8080${eventImage}`
+    return `https://eventmanager1234-1.onrender.com/${eventImage}`
   }
 
   if (loading) {

@@ -33,7 +33,7 @@ export default function Home() {
   const fetchEvents = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:8080/users/events")
+      const response = await fetch("https://eventmanager1234-1.onrender.com/users/events")
       if (response.ok) {
         const data = await response.json()
         setEvents(data)
@@ -51,7 +51,7 @@ export default function Home() {
 
   const fetchEventTypes = async () => {
     try {
-      const response = await fetch("http://localhost:8080/users/events")
+      const response = await fetch("https://eventmanager1234-1.onrender.com/users/events")
       if (response.ok) {
         const events = await response.json()
         // Extract unique event types
@@ -98,7 +98,7 @@ export default function Home() {
         queryParams.append("isFree", "true")
       }
 
-      const response = await fetch(`http://localhost:8080/users/events/search?${queryParams.toString()}`)
+      const response = await fetch(`https://eventmanager1234-1.onrender.com/users/events/search?${queryParams.toString()}`)
 
       if (response.ok) {
         const data = await response.json()

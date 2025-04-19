@@ -20,7 +20,7 @@ const EventCard = ({ event }) => {
 
       ? event.eventImage.startsWith('http') 
         ? event.eventImage  // Already a full URL (Cloudinary)
-        : `http://localhost:8080${event.eventImage}`  // Local path
+        : `https://eventmanager1234-1.onrender.com/${event.eventImage}`  // Local path
       : "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwz/NDdoaXd2M2N0LmNs/b3VkZnJvbnQubmV0/L2FwcC91cGxvYWRz/LzIwMjUvMDMvNTMx/Mzk5Njk0MjRfNTg4/YzAyZmJkY19vLXNj/YWxlZC5qcGc"  // Fallback
   }alt="" />
       <h3 className="text-xl font-semibold mb-2">{event.title}</h3>

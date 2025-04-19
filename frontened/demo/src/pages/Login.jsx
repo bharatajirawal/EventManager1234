@@ -57,7 +57,7 @@ export default function Login() {
       // Debug the request payload
       console.log("Login request payload:", formData);
 
-      const response = await fetch("http://localhost:8080/auth/login", {
+      const response = await fetch("https://eventmanager1234-1.onrender.com/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
