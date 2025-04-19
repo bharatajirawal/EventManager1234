@@ -1,10 +1,10 @@
 import { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Upload, X } from "lucide-react";
+import { MapPin, Upload, X, RefreshCw } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 
 // Fix Leaflet's default icon paths
@@ -18,6 +18,17 @@ L.Icon.Default.mergeOptions({
 function UpdateMapView({ center }) {
   const map = useMap();
   map.setView(center);
+  return null;
+}
+
+// New component to handle map clicks
+function LocationMarker({ setCoordinates }) {
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      setCoordinates(lat, lng);
+    },
+  });
   return null;
 }
 
@@ -41,7 +52,9 @@ export default function CreateEventForm() {
   const [imageFile, setImageFile] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSearched, setLastSearched] = useState(""); // Track last searched location
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -51,6 +64,15 @@ export default function CreateEventForm() {
       ...prevState,
       [name]: type === "checkbox" ? checked : value,
     }));
+    
+    // Reset coordinates if location input changes
+    if (name === "location" && value !== lastSearched) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: "",
+        longitude: ""
+      }));
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -83,12 +105,32 @@ export default function CreateEventForm() {
     }
   };
 
+  const resetLocation = () => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: "",
+      longitude: "",
+      location: ""
+    }));
+    setLastSearched("");
+    toast.success("Location data cleared");
+  };
+
   const handleMapClick = async (e) => {
     e.preventDefault();
     
-    if (!formData.location) {
+    if (!formData.location && !showMap) {
       toast.error('Please enter a location first');
       return;
+    }
+
+    // Clear previous search data if the location has changed
+    if (formData.location !== lastSearched) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: "",
+        longitude: ""
+      }));
     }
 
     if (!formData.latitude || !formData.longitude) {
@@ -105,9 +147,12 @@ export default function CreateEventForm() {
             latitude: firstResult.lat,
             longitude: firstResult.lon
           }));
+          setLastSearched(formData.location); // Update last searched location
           toast.success('Location found on map');
         } else {
           toast.error('Location not found');
+          // Show map anyway with default location if not found
+          setShowMap(!showMap);
           return;
         }
       } catch (error) {
@@ -119,6 +164,39 @@ export default function CreateEventForm() {
     }
 
     setShowMap(!showMap);
+  };
+
+  // New function to update coordinates when map is clicked
+  const setCoordinates = async (lat, lng) => {
+    // Update form data with new coordinates
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng
+    }));
+
+    // Optional: Reverse geocode to get address
+    try {
+      setIsReverseGeocoding(true);
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.display_name) {
+        setFormData(prev => ({
+          ...prev,
+          location: data.display_name
+        }));
+        setLastSearched(data.display_name); // Update last searched location
+        toast.success('Location updated');
+      }
+    } catch (error) {
+      console.error('Error reverse geocoding:', error);
+      toast.error('Could not get address for this location');
+    } finally {
+      setIsReverseGeocoding(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -178,6 +256,7 @@ export default function CreateEventForm() {
       });
       setImagePreview(null);
       setImageFile(null);
+      setLastSearched("");
     } catch (error) {
       console.error("Error creating event:", error);
       if (error.name === 'AbortError') {
@@ -192,7 +271,7 @@ export default function CreateEventForm() {
 
   const center = formData.latitude && formData.longitude 
     ? [parseFloat(formData.latitude), parseFloat(formData.longitude)]
-    : [0, 0];
+    : [51.505, -0.09]; // Default center (London)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-6 bg-white rounded-lg shadow">
@@ -336,80 +415,82 @@ export default function CreateEventForm() {
         <label htmlFor="location" className="block mb-1 font-medium">
           Location *
         </label>
-        <div className="flex">
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded-l focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter venue address"
-          />
-          <button
-            type="button"
-            onClick={handleMapClick}
-            disabled={isGeocoding}
-            className="bg-green-500 text-white px-3 py-2 rounded-r hover:bg-green-600 disabled:bg-green-300"
-          >
-            {isGeocoding ? 'Searching...' : <MapPin size={20} />}
-          </button>
+        <div className="flex items-center">
+          <div className="flex flex-1">
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border rounded-l focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter venue address"
+            />
+            <button
+              type="button"
+              onClick={handleMapClick}
+              disabled={isGeocoding}
+              className="bg-green-500 text-white px-3 py-2 rounded-r hover:bg-green-600 disabled:bg-green-300"
+            >
+              {isGeocoding ? 'Searching...' : <MapPin size={20} />}
+            </button>
+          </div>
+          {(formData.latitude || formData.longitude) && (
+            <button
+              type="button"
+              onClick={resetLocation}
+              className="ml-2 bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300"
+              title="Clear location data"
+            >
+              <RefreshCw size={20} />
+            </button>
+          )}
         </div>
+        {isReverseGeocoding && <p className="text-sm text-gray-500 mt-1">Getting address...</p>}
       </div>
+      
+      {(formData.latitude && formData.longitude) && (
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div>Latitude: {formData.latitude}</div>
+          <div>Longitude: {formData.longitude}</div>
+        </div>
+      )}
+      
+      <button 
+        type="button"
+        onClick={() => setShowMap(!showMap)}
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm w-full md:w-auto"
+      >
+        {showMap ? 'Hide Map' : 'Show Map'}
+      </button>
       
       {showMap && (
         <div className="border rounded p-2">
           <div className="mb-4">
-            <h3 className="font-medium mb-2">Set Exact Location (Optional)</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="latitude" className="block mb-1 text-sm">Latitude</label>
-                <input
-                  type="text"
-                  id="latitude"
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded text-sm"
-                  placeholder="e.g., 40.7128"
-                />
-              </div>
-              <div>
-                <label htmlFor="longitude" className="block mb-1 text-sm">Longitude</label>
-                <input
-                  type="text"
-                  id="longitude"
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded text-sm"
-                  placeholder="e.g., -74.0060"
-                />
-              </div>
-            </div>
+            <h3 className="font-medium mb-2">Set Exact Location</h3>
+            <p className="text-sm text-gray-600 mb-2">
+              Click anywhere on the map to update location
+            </p>
           </div>
           
           <div className="h-64 bg-gray-100 rounded">
-            {formData.latitude && formData.longitude ? (
-              <MapContainer
-                center={center}
-                zoom={13}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={center} />
-                <UpdateMapView center={center} />
-              </MapContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500">Enter a location to see map</p>
-              </div>
-            )}
+            <MapContainer
+              center={center}
+              zoom={13}
+              scrollWheelZoom={true}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {formData.latitude && formData.longitude && (
+                <Marker position={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} />
+              )}
+              <UpdateMapView center={center} />
+              <LocationMarker setCoordinates={setCoordinates} />
+            </MapContainer>
           </div>
           <p className="text-xs text-gray-500 mt-1">
             Note: Map data © OpenStreetMap contributors
