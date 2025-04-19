@@ -20,7 +20,7 @@ export default function MyEventsPage() {
         const response = await fetch(`https://eventmanager1234-1.onrender.com/users/events/filtered?accessToken=${accessToken}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`
-          }
+          },
         })
 
         if (response.ok) {
@@ -28,12 +28,12 @@ export default function MyEventsPage() {
           setEvents(data)
         } else {
           toast.error("Failed to fetch your events")
-          navigate("/events")
+          navigate("/")
         }
       } catch (error) {
         console.error("Error fetching events:", error)
         toast.error("Error loading your events")
-        navigate("/events")
+        navigate("/")
       } finally {
         setLoading(false)
       }
@@ -53,6 +53,7 @@ export default function MyEventsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
+  
         body: JSON.stringify({ accessToken })
       })
 
