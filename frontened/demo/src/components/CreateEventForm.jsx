@@ -1,4 +1,4 @@
-import { useState, useRef,useContext} from "react";
+import { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
@@ -22,7 +22,7 @@ function UpdateMapView({ center }) {
 }
 
 export default function CreateEventForm() {
-  const { user,accessToken } = useContext(AuthContext);
+  const { user, accessToken } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -35,12 +35,13 @@ export default function CreateEventForm() {
     price: "",
     latitude: "",
     longitude: "",
-    email:user.email,
+    email: user.email,
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -55,6 +56,16 @@ export default function CreateEventForm() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type and size
+      if (!file.type.match('image.*')) {
+        toast.error('Please select an image file (JPEG, PNG, GIF)');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -80,7 +91,6 @@ export default function CreateEventForm() {
       return;
     }
 
-    // If coordinates are not set, geocode the address
     if (!formData.latitude || !formData.longitude) {
       setIsGeocoding(true);
       try {
@@ -113,56 +123,70 @@ export default function CreateEventForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     try {
-      // Create a FormData object to handle file upload
       const eventFormData = new FormData();
       
-      // Add all form fields to FormData
-      Object.keys(formData).forEach(key => {
-        eventFormData.append(key, formData[key]);
+      // Convert all form data to strings and append
+      Object.entries(formData).forEach(([key, value]) => {
+        eventFormData.append(key, String(value));
       });
-      eventFormData.append("accessToken",accessToken)
       
-      // Add image file if available
+      eventFormData.append("accessToken", accessToken);
+      
       if (imageFile) {
         eventFormData.append("eventImage", imageFile);
       }
-      
+
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
       const response = await fetch("http://localhost:8080/users/events", {
         method: "POST",
         body: eventFormData,
+        signal: controller.signal,
+        credentials: 'include'
       });
-      
-      if (response.ok) {
-        const createdEvent = await response.json();
-        toast.success("Event created successfully!");
-        navigate(`/events/${createdEvent._id}`);
-        
-        // Reset form
-        setFormData({
-          title: "",
-          description: "",
-          date: "",
-          time: "",
-          location: "",
-          organizer: "",
-          type: "",
-          isFree: true,
-          price: "",
-          latitude: "",
-          longitude: "",
-          email:"",
-        });
-        setImagePreview(null);
-        setImageFile(null);
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Failed to create event");
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to create event");
       }
+
+      const createdEvent = await response.json();
+      toast.success("Event created successfully!");
+      navigate(`/events/${createdEvent._id}`);
+      
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        date: "",
+        time: "",
+        location: "",
+        organizer: "",
+        type: "",
+        isFree: true,
+        price: "",
+        latitude: "",
+        longitude: "",
+        email: user.email,
+      });
+      setImagePreview(null);
+      setImageFile(null);
     } catch (error) {
       console.error("Error creating event:", error);
-      toast.error("An error occurred while creating the event");
+      if (error.name === 'AbortError') {
+        toast.error("Request timed out. Please try again.");
+      } else {
+        toast.error(error.message || "An error occurred while creating the event");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -196,7 +220,8 @@ export default function CreateEventForm() {
           ) : (
             <div className="text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-1 text-sm text-gray-500">Upload an image for your event</p>
+              <p className="mt-1 text-sm text-gray-500">Upload an image for your event (JPEG, PNG, GIF)</p>
+              <p className="text-xs text-gray-400">Max file size: 5MB</p>
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
@@ -209,16 +234,17 @@ export default function CreateEventForm() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg, image/png, image/gif"
             onChange={handleImageUpload}
             className="hidden"
           />
         </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="title" className="block mb-1 font-medium">
-            Event Title
+            Event Title *
           </label>
           <input
             type="text"
@@ -234,7 +260,7 @@ export default function CreateEventForm() {
         
         <div>
           <label htmlFor="type" className="block mb-1 font-medium">
-            Event Type
+            Event Type *
           </label>
           <select
             id="type"
@@ -259,7 +285,7 @@ export default function CreateEventForm() {
 
       <div>
         <label htmlFor="description" className="block mb-1 font-medium">
-          Description
+          Description *
         </label>
         <textarea
           id="description"
@@ -276,7 +302,7 @@ export default function CreateEventForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="date" className="block mb-1 font-medium">
-            Date
+            Date *
           </label>
           <input
             type="date"
@@ -285,13 +311,14 @@ export default function CreateEventForm() {
             value={formData.date}
             onChange={handleChange}
             required
+            min={new Date().toISOString().split('T')[0]} // Prevent past dates
             className="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         
         <div>
           <label htmlFor="time" className="block mb-1 font-medium">
-            Time
+            Time *
           </label>
           <input
             type="time"
@@ -307,7 +334,7 @@ export default function CreateEventForm() {
 
       <div>
         <label htmlFor="location" className="block mb-1 font-medium">
-          Location
+          Location *
         </label>
         <div className="flex">
           <input
@@ -392,7 +419,7 @@ export default function CreateEventForm() {
 
       <div>
         <label htmlFor="organizer" className="block mb-1 font-medium">
-          Organizer
+          Organizer *
         </label>
         <input
           type="text"
@@ -422,7 +449,7 @@ export default function CreateEventForm() {
       {!formData.isFree && (
         <div>
           <label htmlFor="price" className="block mb-1 font-medium">
-            Price
+            Price *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -436,6 +463,7 @@ export default function CreateEventForm() {
               onChange={handleChange}
               min="0"
               step="0.01"
+              required
               className="w-full pl-7 px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500"
               placeholder="0.00"
             />
@@ -445,9 +473,12 @@ export default function CreateEventForm() {
       
       <button
         type="submit"
-        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium"
+        disabled={isSubmitting}
+        className={`w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium ${
+          isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        Create Event
+        {isSubmitting ? 'Creating Event...' : 'Create Event'}
       </button>
     </form>
   );
