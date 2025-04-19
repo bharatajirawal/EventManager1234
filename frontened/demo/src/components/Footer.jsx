@@ -41,7 +41,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+        <div className="mt-9 pt-8 border-t border-gray-800 text-center">
           <p>&copy; {new Date().getFullYear()} EventHub. All rights reserved.</p>
         </div>
       </div>
