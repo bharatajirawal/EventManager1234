@@ -193,13 +193,15 @@ export default function EventEditPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   required
                 >
-                  <option value="">Select type</option>
-                  <option value="Conference">Conference</option>
-                  <option value="Workshop">Workshop</option>
-                  <option value="Meetup">Meetup</option>
-                  <option value="Concert">Concert</option>
-                  <option value="Exhibition">Exhibition</option>
-                  <option value="Other">Other</option>
+              <option value="">Select event type</option>
+            <option value="Music">Music</option>
+            <option value="Nightlife">Nightlife</option>
+            <option value="Business">Business</option>
+            <option value="Performing Arts">Performing Arts</option>
+            <option value="Food & Drink">Food & Drink</option>
+            <option value="Holidays">Holidays</option>
+            <option value="Dating">Dating</option>
+            <option value="Hobbies">Hobbies</option>
                 </select>
               </div>
 
