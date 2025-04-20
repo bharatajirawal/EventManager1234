@@ -29,7 +29,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Set up CORS middleware with specific origin
 app.use(cors({
   // Allow requests from these specific origins
-  origin: ['http://localhost:5173', '[https://eventhub-liart-iota.vercel.app](https://eventhub-liart-iota.vercel.app)'],
+  origin: ['http://localhost:5173', 'https://eventhub-liart-iota.vercel.app'],
+
   
   // Allow credentials (e.g., cookies, authorization headers) to be included in requests
   credentials: true,
