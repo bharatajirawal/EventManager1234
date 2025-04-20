@@ -21,14 +21,17 @@ export default function MyEventsPage() {
           headers: {
             'Authorization': `Bearer ${accessToken}`
           },
+          credentials: 'include'
         })
 
         if (response.ok) {
           const data = await response.json()
+          console.log("Your events:", data)
           setEvents(data)
         } else {
           toast.error("Failed to fetch your events")
           navigate("/")
+          
         }
       } catch (error) {
         console.error("Error fetching events:", error)
@@ -53,8 +56,9 @@ export default function MyEventsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-  
-        body: JSON.stringify({ accessToken })
+      
+        body: JSON.stringify({ accessToken }),
+        credentials: 'include',
       })
 
       if (response.ok) {
@@ -106,7 +110,7 @@ export default function MyEventsPage() {
         <h3 className="text-lg font-medium mb-2">No Events Found</h3>
         <p className="text-gray-500 mb-4">You haven't created any events yet.</p>
         <Link 
-          to="/events/create" 
+          to="/create-event" 
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
         >
           Create Your First Event
@@ -120,7 +124,7 @@ export default function MyEventsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Events</h1>
         <Link
-          to="/events/create"
+          to="/create-event"
           className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
         >
           <Edit size={16} />

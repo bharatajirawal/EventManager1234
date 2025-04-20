@@ -219,7 +219,7 @@ export default function CreateEventForm() {
 
       // Create abort controller for timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 150000); // 15s timeout
 
       const response = await fetch("https://eventmanager1234-1.onrender.com/users/events", {
         method: "POST",

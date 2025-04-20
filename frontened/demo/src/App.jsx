@@ -12,6 +12,7 @@ import Profile from "./pages/Profile.jsx";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import EventEditPage from "./pages/EventEditPage";
 import { AuthProvider } from "./context/AuthContext";
+import MyEvents from "./pages/MyEvents.jsx";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/myevents" element={<MyEvents />} />
             <Route path="/events/edit/:id" element={<EventEditPage />} />
 
           </Routes>
