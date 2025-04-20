@@ -8,11 +8,11 @@ import EventDetails from "./pages/Eventdetails.jsx";
 import Services from "./pages/Services";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Profile from "./pages/Profile.jsx";
+import Profile from "./pages/profile.jsx";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import EventEditPage from "./pages/EventEditPage";
 import { AuthProvider } from "./context/AuthContext";
-import MyEvents from "./pages/MyEvents.jsx";
+import MyEvents from "./pages/MyEvents";
 
 function App() {
   return (
