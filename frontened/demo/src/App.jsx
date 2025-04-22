@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
@@ -16,6 +16,7 @@ import MyEvents from "./pages/MyEvents";
 
 function App() {
   return (
+  
     <AuthProvider>
       <div className="flex min-h-screen flex-col">
         <Navigation />
@@ -39,6 +40,7 @@ function App() {
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       </div>
     </AuthProvider>
+  
   );
 }
 export default App;

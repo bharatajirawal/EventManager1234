@@ -36,7 +36,7 @@ app.use(cors({
   credentials: true,
   
   // Allow these HTTP methods to be used in requests
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   
   // Allow these headers to be included in requests
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -68,10 +68,4 @@ app.use((req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
 });

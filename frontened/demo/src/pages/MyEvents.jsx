@@ -28,15 +28,11 @@ export default function MyEventsPage() {
           const data = await response.json()
           console.log("Your events:", data)
           setEvents(data)
-        } else {
-          toast.error("Failed to fetch your events")
-          navigate("/")
-          
-        }
+        } 
       } catch (error) {
         console.error("Error fetching events:", error)
         toast.error("Error loading your events")
-        navigate("/")
+        navigate("/create-event")
       } finally {
         setLoading(false)
       }
@@ -67,6 +63,7 @@ export default function MyEventsPage() {
       } else {
         const errorData = await response.json()
         toast.error(errorData.message || 'Failed to delete event')
+        
       }
     } catch (error) {
       console.error('Error deleting event:', error)
