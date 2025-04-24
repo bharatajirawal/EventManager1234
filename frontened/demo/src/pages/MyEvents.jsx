@@ -34,7 +34,7 @@ export default function MyEventsPage() {
         toast.error("Error loading your events")
         navigate("/create-event")
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
