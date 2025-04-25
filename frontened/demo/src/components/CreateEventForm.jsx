@@ -374,7 +374,7 @@ export default function CreateEventForm() {
           required
           rows="4"
           className="w-full px-3 py-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Describe your event"
+          placeholder="Describe your event and organiser details like phone no. and email." 
         ></textarea>
       </div>
 

@@ -41,6 +41,7 @@ app.use(cors({
   // Allow these headers to be included in requests
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors());
 
 // Simple health check route
 app.get('/ping', (req, res) => {
@@ -52,6 +53,13 @@ app.use('/auth', AuthRouter);
 app.use('/users', userRoutes);
 
 // Error handling middleware
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // For dev only
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({

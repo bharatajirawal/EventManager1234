@@ -80,7 +80,7 @@ router.post("/events", upload.single("eventImage"), async (req, res) => {
       return res.status(400).json({ message: "Organizer is required" });
     }
 
-    const { accessToken } = req.body;
+    const accessToken = req.body.accessToken || req.query.accessToken || req.headers.authorization?.split(" ")[1];
     if (!accessToken) {
       return res.status(401).json({ message: "Authentication required" });
     }

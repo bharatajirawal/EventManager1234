@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-
 export default function Signup() {
   const [formData, setFormData] = useState({
     name: '',
@@ -54,7 +53,6 @@ export default function Signup() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Signup failed');
       }
-
       setSuccess('Signup successful! Please log in.');
       setFormData({ name: '', email: '', password: '' });
     } catch (err) {
