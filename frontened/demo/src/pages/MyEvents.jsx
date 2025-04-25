@@ -45,7 +45,7 @@ export default function MyEventsPage() {
         setEvents([]) // Set empty array on error
         // Don't navigate away automatically - let user see the "no events" message
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
