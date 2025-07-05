@@ -299,7 +299,7 @@ export default function CreateEventForm() {
           ) : (
             <div className="text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-1 text-sm text-gray-500">Upload an image for your event (JPEG, PNG, GIF)</p>
+              <p className="mt-1 text-sm text-gray-500">Upload an image for your event (JPEG, PNG, GIF,WEBP)</p>
               <p className="text-xs text-gray-400">Max file size: 5MB</p>
               <button
                 type="button"
