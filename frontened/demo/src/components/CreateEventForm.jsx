@@ -313,7 +313,7 @@ export default function CreateEventForm() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg, image/png, image/gif"
+            accept="image/jpeg, image/png, image/gif, image/webp"
             onChange={handleImageUpload}
             className="hidden"
           />
