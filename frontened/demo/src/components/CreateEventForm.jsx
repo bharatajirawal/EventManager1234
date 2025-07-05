@@ -75,26 +75,84 @@ export default function CreateEventForm() {
     }
   };
 
+  // Enhanced image validation function
+  const validateImage = (file) => {
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return false;
+    }
+
+    // Define allowed image formats
+    const allowedTypes = [
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/bmp',
+      'image/tiff',
+      'image/svg+xml'
+    ];
+
+    const allowedExtensions = [
+      'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'
+    ];
+
+    // Get file extension
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    // Check MIME type
+    const isValidMimeType = allowedTypes.includes(file.type);
+    
+    // Check file extension as fallback
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+
+    if (!isValidMimeType && !isValidExtension) {
+      const formatName = fileExtension ? fileExtension.toUpperCase() : 'Unknown';
+      toast.error(`${formatName} format is not supported. Please use JPEG, PNG, GIF, WEBP, BMP, TIFF, or SVG images.`);
+      return false;
+    }
+
+    // Special handling for WebP files that might have incorrect MIME type
+    if (fileExtension === 'webp' && file.type !== 'image/webp') {
+      console.warn('WebP file detected with incorrect MIME type, proceeding anyway');
+    }
+
+    return true;
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validate file type and size
-      if (!file.type.match('image.*')) {
-        toast.error('Please select an image file (JPEG, PNG, GIF, WEBP)');
-        return;
+    if (!file) return;
+
+    // Validate the image
+    if (!validateImage(file)) {
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Image size should be less than 5MB');
-        return;
-      }
-      
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      return;
     }
+
+    setImageFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      toast.success('Image uploaded successfully');
+    };
+    
+    reader.onerror = () => {
+      toast.error('Error reading the image file');
+      setImageFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
@@ -103,6 +161,7 @@ export default function CreateEventForm() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    toast.success('Image removed');
   };
 
   const resetLocation = () => {
@@ -139,6 +198,11 @@ export default function CreateEventForm() {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.location)}`
         );
+        
+        if (!response.ok) {
+          throw new Error('Failed to search location');
+        }
+        
         const data = await response.json();
         if (data.length > 0) {
           const firstResult = data[0];
@@ -150,13 +214,14 @@ export default function CreateEventForm() {
           setLastSearched(formData.location); // Update last searched location
           toast.success('Location found on map');
         } else {
-          toast.error('Location not found');
+          toast.error('Location not found. Please try a different address.');
           // Show map anyway with default location if not found
           setShowMap(!showMap);
           return;
         }
       } catch (error) {
-        toast.error('Error geocoding address');
+        console.error('Geocoding error:', error);
+        toast.error('Unable to search location. Please check your internet connection.');
         return;
       } finally {
         setIsGeocoding(false);
@@ -181,6 +246,11 @@ export default function CreateEventForm() {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
       );
+      
+      if (!response.ok) {
+        throw new Error('Failed to get address');
+      }
+      
       const data = await response.json();
       
       if (data && data.display_name) {
@@ -189,7 +259,9 @@ export default function CreateEventForm() {
           location: data.display_name
         }));
         setLastSearched(data.display_name); // Update last searched location
-        toast.success('Location updated');
+        toast.success('Location updated from map');
+      } else {
+        toast.success('Location coordinates updated');
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error);
@@ -202,6 +274,9 @@ export default function CreateEventForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    // Show loading toast
+    const loadingToast = toast.loading('Creating your event...');
     
     try {
       const eventFormData = new FormData();
@@ -219,7 +294,7 @@ export default function CreateEventForm() {
 
       // Create abort controller for timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 150000); // 15s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
       const response = await fetch("https://eventmanager1234-1.onrender.com/users/events", {
         method: "POST",
@@ -231,12 +306,26 @@ export default function CreateEventForm() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to create event");
+        let errorMessage = "Failed to create event";
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (parseError) {
+          // If we can't parse the error response, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       const createdEvent = await response.json();
-      toast.success("Event created successfully!");
+      
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
+      toast.success("Event created successfully! 🎉");
+      
+      // Navigate to the created event
       navigate(`/events/${createdEvent._id}`);
       
       // Reset form
@@ -257,12 +346,22 @@ export default function CreateEventForm() {
       setImagePreview(null);
       setImageFile(null);
       setLastSearched("");
+      
     } catch (error) {
       console.error("Error creating event:", error);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show specific error messages
       if (error.name === 'AbortError') {
-        toast.error("Request timed out. Please try again.");
+        toast.error("Request timed out. Please check your internet connection and try again.");
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        toast.error("Network error. Please check your internet connection.");
+      } else if (error.message.includes('image') || error.message.includes('format')) {
+        toast.error("Image upload failed. Please try a different image format.");
       } else {
-        toast.error(error.message || "An error occurred while creating the event");
+        toast.error(error.message || "Something went wrong while creating the event. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -291,7 +390,7 @@ export default function CreateEventForm() {
               <button 
                 type="button"
                 onClick={removeImage}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
               >
                 <X size={16} />
               </button>
@@ -299,12 +398,13 @@ export default function CreateEventForm() {
           ) : (
             <div className="text-center">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-1 text-sm text-gray-500">Upload an image for your event (JPEG, PNG, GIF,WEBP)</p>
+              <p className="mt-1 text-sm text-gray-500">Upload an image for your event</p>
+              <p className="text-xs text-gray-400">Supported formats: JPEG, PNG, GIF, WEBP, BMP, TIFF, SVG</p>
               <p className="text-xs text-gray-400">Max file size: 5MB</p>
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
               >
                 Select Image
               </button>
@@ -313,7 +413,7 @@ export default function CreateEventForm() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg, image/png, image/gif, image/webp"
+            accept="image/*"
             onChange={handleImageUpload}
             className="hidden"
           />
@@ -432,7 +532,7 @@ export default function CreateEventForm() {
               type="button"
               onClick={handleMapClick}
               disabled={isGeocoding}
-              className="bg-green-500 text-white px-3 py-2 rounded-r hover:bg-green-600 disabled:bg-green-300"
+              className="bg-green-500 text-white px-3 py-2 rounded-r hover:bg-green-600 disabled:bg-green-300 transition-colors"
             >
               {isGeocoding ? 'Searching...' : <MapPin size={20} />}
             </button>
@@ -441,7 +541,7 @@ export default function CreateEventForm() {
             <button
               type="button"
               onClick={resetLocation}
-              className="ml-2 bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300"
+              className="ml-2 bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300 transition-colors"
               title="Clear location data"
             >
               <RefreshCw size={20} />
@@ -461,7 +561,7 @@ export default function CreateEventForm() {
       <button 
         type="button"
         onClick={() => setShowMap(!showMap)}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm w-full md:w-auto"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm w-full md:w-auto transition-colors"
       >
         {showMap ? 'Hide Map' : 'Show Map'}
       </button>
@@ -556,7 +656,7 @@ export default function CreateEventForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className={`w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium ${
+        className={`w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 font-medium transition-colors ${
           isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >
