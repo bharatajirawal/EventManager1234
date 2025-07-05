@@ -72,103 +72,31 @@ router.get("/events/filtered", async (req, res) => {
 // Create event
 router.post("/events", upload.single("eventImage"), async (req, res) => {
   try {
-    console.log("=== EVENT CREATION START ===");
-    console.log("Request headers:", req.headers);
-    console.log("Request body:", req.body);
-    console.log("File received:", req.file ? "Yes" : "No");
-    console.log("Content-Type:", req.headers['content-type']);
-
-    // Check if organizer exists
     if (!req.body.organizer) {
-      console.log("Missing organizer field");
-      return res.status(400).json({ 
-        message: "Organizer is required",
-        receivedFields: Object.keys(req.body)
-      });
+      return res.status(400).json({ message: "Organizer email is required" })
     }
-
-    // Get access token
-    const accessToken = req.body.accessToken || 
-                       req.query.accessToken || 
-                       req.headers.authorization?.split(" ")[1];
-    
-    if (!accessToken) {
-      console.log("No access token provided");
-      return res.status(401).json({ message: "Authentication required" });
-    }
-
-    console.log("Verifying JWT token...");
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
-    console.log("Token verified successfully:", decoded);
-
-    // Check database connection
-    if (!mongoose.connection.readyState) {
-      console.log("Database not connected");
-      return res.status(500).json({ message: "Database connection error" });
-    }
+    const { accessToken } = req.body
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET)
+    // console.log("decoded", decoded)
 
     const eventData = {
       ...req.body,
-      eventImage: req.file ? req.file.path : null,
-      price: req.body.isFree === "true" ? null : Number(req.body.price),
+      organizer: req.body.organizer, // This should be the email
+      eventImage: req.file ? `/uploads/events/${req.file.filename}` : null,
+      price: req.body.isFree === "true" ? null : Number.parseFloat(req.body.price),
       isFree: req.body.isFree === "true",
-      email: decoded._id
-    };
+      email: decoded._id,
+    }
 
-    console.log("Creating event with data:", eventData);
-
-    const event = new Event(eventData);
-    await event.save();
-    
-    console.log("Event created successfully:", event._id);
-    res.status(201).json(event);
-
+    const event = new Event(eventData)
+    await event.save()
+    // console.log(event)
+    res.status(201).json(event)
   } catch (error) {
-    console.error("=== ERROR OCCURRED ===");
-    console.error("Error name:", error.name);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
-
-    // Handle specific errors
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        message: "Invalid authentication token",
-        error: error.message 
-      });
-    }
-
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        message: "Authentication token expired",
-        error: error.message 
-      });
-    }
-
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map(err => err.message);
-      return res.status(400).json({
-        message: "Validation failed",
-        errors: validationErrors,
-        error: error.message
-      });
-    }
-
-    if (error.code === 11000) {
-      return res.status(409).json({
-        message: "Duplicate entry",
-        error: error.message
-      });
-    }
-
-    // Generic server error
-    res.status(500).json({
-      message: "Internal server error",
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
-      timestamp: new Date().toISOString()
-    });
+    console.error(error)
+    res.status(400).json({ message: "Error creating event", error: error.message })
   }
-});
-
+})
 // Get single event
 router.get("/events/:id", async (req, res) => {
   try {
