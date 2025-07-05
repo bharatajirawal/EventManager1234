@@ -358,6 +358,7 @@ export default function CreateEventForm() {
             <option value="Holidays">Holidays</option>
             <option value="Dating">Dating</option>
             <option value="Hobbies">Hobbies</option>
+            <option value="Others">Others</option>
           </select>
         </div>
       </div>
