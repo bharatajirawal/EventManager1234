@@ -80,7 +80,7 @@ export default function CreateEventForm() {
     if (file) {
       // Validate file type and size
       if (!file.type.match('image.*')) {
-        toast.error('Please select an image file (JPEG, PNG, GIF)');
+        toast.error('Please select an image file (JPEG, PNG, GIF, WEBP)');
         return;
       }
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
