@@ -98,7 +98,7 @@ export default function MyEventsPage() {
 
   const getImageUrl = (eventImage) => {
     if (!eventImage) {
-      return "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwzNDdoaXd2M2N0LmNsb3VkZnJvbnQubmV0L2FwcC91cGxvYWRzLzIwMjUvMDMvNTMxMzk5Njk0MjRfNTg4YzAyZmJkY19vLXNjYWxlZC5qcGc"
+      return "https://imgs.search.brave.com/ZvA9pgKcmevvLt_fZJaxYETAvHo9bMm7zFUgZ_X9Be4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTE4/ODI1OTE3Ny9waG90/by9hZnJvLWdpcmwt/ZW5qb3lpbmctdGhl/LXNlYS1pZHlsbC5q/cGc_cz02MTJ4NjEy/Jnc9MCZrPTIwJmM9/clhqOE9CcVIxVG5J/dlV0Z0cxTzB2VFlH/eUtvZXJHQjlacDFP/dDVReDNScz0"
     }
     if (eventImage.startsWith("http")) {
       return eventImage
@@ -156,7 +156,7 @@ export default function MyEventsPage() {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.src =
-                    "https://imgs.search.brave.com/SDmMp6QK8BpnygU8TIA6Gj8OpfrwxZ5xomIl51gjqhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9keWwzNDdoaXd2M2N0LmNsb3VkZnJvbnQubmV0L2FwcC91cGxvYWRzLzIwMjUvMDMvNTMxMzk5Njk0MjRfNTg4YzAyZmJkY19vLXNjYWxlZC5qcGc"
+                    "https://imgs.search.brave.com/ZvA9pgKcmevvLt_fZJaxYETAvHo9bMm7zFUgZ_X9Be4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTE4/ODI1OTE3Ny9waG90/by9hZnJvLWdpcmwt/ZW5qb3lpbmctdGhl/LXNlYS1pZHlsbC5q/cGc_cz02MTJ4NjEy/Jnc9MCZrPTIwJmM9/clhqOE9CcVIxVG5J/dlV0Z0cxTzB2VFlH/eUtvZXJHQjlacDFP/dDVReDNScz0"
                 }}
               />
               <div className="absolute top-2 right-2">

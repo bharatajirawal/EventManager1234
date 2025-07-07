@@ -73,30 +73,31 @@ router.get("/events/filtered", async (req, res) => {
 router.post("/events", upload.single("eventImage"), async (req, res) => {
   try {
     if (!req.body.organizer) {
-      return res.status(400).json({ message: "Organizer email is required" })
+      return res.status(400).json({ message: "Organizer email is required" });
     }
-    const { accessToken } = req.body
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET)
-    // console.log("decoded", decoded)
 
+    const { accessToken } = req.body;
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+console.log(req.file.path)
     const eventData = {
       ...req.body,
-      organizer: req.body.organizer, // This should be the email
-      eventImage: req.file ? `/uploads/events/${req.file.filename}` : null,
+      organizer: req.body.organizer,
+      eventImage: req.file ? req.file.path : null,
+       // ✅ Fix here
       price: req.body.isFree === "true" ? null : Number.parseFloat(req.body.price),
       isFree: req.body.isFree === "true",
       email: decoded._id,
-    }
+    };
 
-    const event = new Event(eventData)
-    await event.save()
-    // console.log(event)
-    res.status(201).json(event)
+    const event = new Event(eventData);
+    await event.save();
+    res.status(201).json(event);
   } catch (error) {
-    console.error(error)
-    res.status(400).json({ message: "Error creating event", error: error.message })
+    console.error("Error creating event:", error);
+    res.status(400).json({ message: "Error creating event", error: error.message });
   }
-})
+});
+
 // Get single event
 router.get("/events/:id", async (req, res) => {
   try {
